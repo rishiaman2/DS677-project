@@ -105,7 +105,7 @@ A job that hits its time limit can be submitted again with the same command; `tr
 - [x] Repository, code and configs (smoke-tested on CPU with synthetic data)
 - [x] Instructor meeting (November 6, 2026); claim revised from the feedback
 - [ ] Revised claim approved
-- [ ] Wulver exploration and pilot (`report/wulver_exploration.md`)
+- [x] Wulver exploration and pilot (`report/wulver_exploration.md`): core plan about 17 GPU-hours, 101 SU
 - [ ] Learning-rate sweeps
 - [ ] Core runs: ResNet-18, ViT-Lite-7/8, 7/4, 7/2 (3 seeds each), ViT-B/16 fine-tune
 - [ ] Analyses: attention distance, probes, knockout
