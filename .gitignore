@@ -1,0 +1,12 @@
+# data and model files stay on Wulver, never in git
+data/
+*.npz
+*.pt
+*.pth
+hf_cache/
+envs/
+results/**/last.pt
+# python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/

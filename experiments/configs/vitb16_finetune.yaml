@@ -1,0 +1,31 @@
+# Reference: fine-tune the pretrained google/vit-base-patch16-224-in21k on CIFAR-10 at 224 px.
+# The paper reports 98.95% at 384 px with 10,000 SGD steps at batch 512; this is a cheaper schedule.
+run_name: vitb16_finetune
+model:
+  name: vit_b16_pretrained
+  checkpoint: google/vit-base-patch16-224-in21k
+data:
+  dir: data
+  val_size: 0
+  image_size: 224          # 32x32 images upscaled; each 16x16 patch covers about 2.3x2.3 original pixels
+  normalize: vit_in21k
+  crop_scale: [0.8, 1.0]
+  randaugment_magnitude: null
+  num_workers: 4
+train:
+  epochs: 5
+  batch_size: 32           # fits a 10 GB slice in bf16 by estimate; the pilot confirms peak memory
+  eval_batch_size: 128
+  label_smoothing: 0.0
+  mixup_alpha: null
+  cutmix_alpha: null
+  eval_every: 1
+  ckpt_every: 1
+  clip_grad: 1.0
+optim:
+  name: adamw
+  lr: 3.0e-5
+  weight_decay: 0.05
+  warmup_epochs: 1
+  cooldown_epochs: 0
+  min_lr: 0.0

@@ -1,0 +1,32 @@
+# ViT-Lite-7 with 8x8 patches (16 tokens + CLS). Sweep point and replication anchor (CCT: 89.10%).
+# Shared recipe for every from-scratch model: same data, augmentation, batch size and 300 epochs.
+run_name: vitlite_p8
+model:
+  name: vit_lite
+  patch_size: 8
+data:
+  dir: data
+  val_size: 0              # 5000 for learning-rate sweeps (test set untouched), 0 for final runs
+  image_size: 32
+  normalize: cifar
+  crop_scale: [0.8, 1.0]
+  randaugment_magnitude: 9
+  num_workers: 4
+train:
+  epochs: 300
+  batch_size: 128
+  eval_batch_size: 512
+  label_smoothing: 0.1
+  mixup_alpha: 0.8
+  cutmix_alpha: 1.0
+  mix_off_epoch: 175       # Mixup/CutMix switched off for the last 125 epochs, as in the CCT config
+  eval_every: 10
+  ckpt_every: 25
+  clip_grad: null
+optim:                     # CCT released CIFAR-10 recipe (cct_7-3x1_cifar10_300epochs.yml)
+  name: adamw
+  lr: 5.5e-4
+  weight_decay: 0.06
+  warmup_epochs: 10
+  cooldown_epochs: 10
+  min_lr: 1.0e-5
