@@ -7,9 +7,11 @@ and the matching config.yaml. Runs still in progress have no metrics.json and ar
 pending. Needs only the Python standard library and PyYAML.
 
 Rules fixed before any results were seen:
-* Learning rate: the sweep value with the highest validation accuracy (single seed, 30 epochs,
-  5,000 held-out training images; the test set is never used). The ViT rate is swept on
-  ViT-Lite-7/4 and applied to every ViT-Lite-7 config.
+* Learning rate: the sweep value with the highest validation accuracy (single seed, 5,000
+  held-out training images; the test set is never used). The ViT rate is swept on ViT-Lite-7/4
+  and applied to every ViT-Lite-7 config. When a model has sweeps of different lengths, the
+  longest one decides (see experiments/decisions.md, 2026-11-13: the 30-epoch sweep put both
+  best rates at the edge of the grid, so the comparison was repeated at the full 300 epochs).
 * Accuracy: final-epoch test accuracy, mean and sample standard deviation over seeds.
 * Claim: holds if ResNet-18's mean test accuracy is at least 1.0 point above the ViT-Lite-7
   mean at every patch size tested (8, 4, 2). It is provisional until every group has 3 seeds.
@@ -83,27 +85,37 @@ def sweep_section(finished, out):
     if not sweeps:
         out.append("## Learning-rate sweeps\n\nNo finished sweep runs yet.\n")
         return
-    groups = defaultdict(list)
+    groups = defaultdict(list)  # (model, epochs) -> [(lr, val acc, hours)]
     for run, ms in sweeps.items():
         m = ms[0]
         cfg = m["_cfg"]
         model = cfg["model"]["name"] + (f"_p{cfg['model']['patch_size']}" if "patch_size" in cfg["model"] else "")
-        groups[model].append((float(cfg["optim"]["lr"]), pct(m["final_val_acc"]), m.get("train_hours")))
-    out.append("## Learning-rate sweeps (validation accuracy, seed 0, 30 epochs)\n")
-    out.append("| Model | Learning rate | Validation accuracy (%) | Hours |")
-    out.append("| --- | --- | --- | --- |")
-    choices = {}
-    for model, rows in sorted(groups.items()):
+        epochs = int((cfg.get("train") or {}).get("epochs", m.get("epochs", 0)))
+        groups[(model, epochs)].append((float(cfg["optim"]["lr"]), pct(m["final_val_acc"]), m.get("train_hours")))
+    out.append("## Learning-rate sweeps (validation accuracy, seed 0, test set unused)\n")
+    out.append("| Model | Epochs | Learning rate | Validation accuracy (%) | Hours |")
+    out.append("| --- | --- | --- | --- | --- |")
+    best_by_model = {}
+    edge_notes = []
+    for (model, epochs), rows in sorted(groups.items()):
         rows.sort()
         best = max(rows, key=lambda r: r[1])
-        choices[model] = best[0]
+        if len(rows) >= 3 and best[0] in (rows[0][0], rows[-1][0]):
+            side = "lowest" if best[0] == rows[0][0] else "highest"
+            edge_notes.append(f"{model}, {epochs} epochs: the best rate ({best[0]:g}) is the {side} value tried, "
+                              f"so the grid did not bracket the optimum.")
+        if model not in best_by_model or epochs > best_by_model[model][0]:
+            best_by_model[model] = (epochs, best[0])
         for lr, acc, hours in rows:
             mark = " (best)" if lr == best[0] else ""
-            out.append(f"| {model} | {lr:g}{mark} | {acc:.2f} | {hours} |")
+            out.append(f"| {model} | {epochs} | {lr:g}{mark} | {acc:.2f} | {hours} |")
     out.append("")
-    out.append("### Apply the chosen rates (run on your laptop, then commit, push, and `git pull` on Wulver)\n")
+    if edge_notes:
+        out.append("**Edge of the grid:** " + " ".join(edge_notes) + "\n")
+    out.append("### Rates to use (longest sweep per model decides)\n")
+    out.append("Run these on your laptop, then commit, push, and `git pull` on Wulver.\n")
     out.append("```bash")
-    for model, lr in sorted(choices.items()):
+    for model, (epochs, lr) in sorted(best_by_model.items()):
         if model.startswith("resnet18"):
             targets = ["resnet18"]
         elif model.startswith("vit_lite"):
@@ -112,10 +124,11 @@ def sweep_section(finished, out):
             continue
         now = current_lr(targets[0])
         if now is not None and abs(now - lr) < 1e-12:
-            out.append(f"# {model}: best rate {lr:g} is already in the configs, nothing to change")
+            out.append(f"# {model}: best rate {lr:g} ({epochs}-epoch sweep) is already in the configs, nothing to change")
             continue
         files = " ".join(f"experiments/configs/{t}.yaml" for t in targets)
-        out.append(f"sed -i 's/^  lr: .*/  lr: {lr:g}  # chosen by the validation sweep/' {files}")
+        out.append(f"# {model}: best rate {lr:g} from the {epochs}-epoch sweep")
+        out.append(f"sed -i 's/^  lr: .*/  lr: {lr:g}  # chosen by the {epochs}-epoch validation sweep/' {files}")
     out.append("```\n")
 
 
