@@ -5,8 +5,8 @@
 set -e
 T=experiments/wulver/train.sbatch
 for SEED in 0 1 2; do
-  sbatch --job-name=vitlite_convstem_s$SEED --time=06:00:00 $T experiments/configs/vitlite_convstem.yaml $SEED
-  sbatch --job-name=vitlite_p2_65ep_s$SEED --time=06:00:00 $T experiments/configs/vitlite_p2.yaml $SEED \
+  sbatch --job-name=vitlite_convstem_s$SEED --time=03:00:00 $T experiments/configs/vitlite_convstem.yaml $SEED
+  sbatch --job-name=vitlite_p2_65ep_s$SEED --time=02:00:00 $T experiments/configs/vitlite_p2.yaml $SEED \
     run_name=vitlite_p2_65ep train.epochs=65 train.mix_off_epoch=38 optim.warmup_epochs=2 optim.cooldown_epochs=2 \
     train.eval_every=5 train.ckpt_every=5
 done

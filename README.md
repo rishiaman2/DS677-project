@@ -61,6 +61,7 @@ src/analysis/                     attention distance, probes, knockout (Mileston
 experiments/configs/              one YAML per model
 experiments/prepare_data.py       downloads CIFAR-10 (and caches the ViT-B/16 checkpoint)
 experiments/measure_cost.py       parameter and FLOP counts in section 3
+experiments/summarize_results.py  sweep choice, seed statistics, anchor and claim check
 experiments/wulver/               environment, job scripts, submission scripts, logs
 demo/                             self-contained demo notebook (Milestone 3)
 ```
@@ -72,7 +73,7 @@ This follows the course guide *Getting Started on Wulver*. Everything lives in t
 ```bash
 # 0. on the login node, inside the course directory
 cd /course/2026/fall/ds/677/ikoutis/rv44
-git clone https://github.com/rishiaman2/DS677-project.git
+git clone https://github.com/NJIT-DS677-Deep-Learning/DS677-project.git
 cd DS677-project
 
 # 1. download CIFAR-10 and cache the ViT-B/16 checkpoint (needs internet, so login node; about a minute)
@@ -84,14 +85,18 @@ sbatch experiments/wulver/explore.sbatch
 tail -F experiments/wulver/logs/explore_pilot.<jobid>.out
 cat results/pilot/summary.md
 
-# 3. learning-rate sweeps on the validation split, then set the chosen rates in the configs
+# 3. learning-rate sweeps on the validation split (6 jobs, a few minutes each)
 bash experiments/wulver/lr_sweep.sh
+python experiments/summarize_results.py   # best rate per model, and the sed lines that set it
 
 # 4. core runs (3 seeds x 4 models, plus the ViT-B/16 fine-tune)
 bash experiments/wulver/submit_core.sh
 
 # 5. extensions, only after the core runs
 bash experiments/wulver/submit_extensions.sh
+
+# results so far: seeds, mean and std, replication anchor, claim check (also written to results/summary.md)
+python experiments/summarize_results.py
 
 # check on jobs
 squeue -u $USER
