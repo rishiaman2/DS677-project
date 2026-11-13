@@ -2,7 +2,7 @@
 
 > **Claim.** We claim that a small Vision Transformer trained from scratch on CIFAR-10 stays at least 1 accuracy point below a ResNet-18 at every patch size we test (8x8, 4x4 and 2x2 pixels), and we will test it against a ResNet-18 baseline trained with the same data, augmentation and 300-epoch budget on CIFAR-10.
 >
-> **Status:** revised after feedback at the instructor meeting on November 6, 2026; awaiting final approval.
+> **Status:** approved by Akshay Rangamani on November 12, 2026.
 
 DS 677 Deep Learning, Fall 2026. Model Review and Demo track. Rishabh Verma (solo project).
 
@@ -104,7 +104,7 @@ A job that hits its time limit can be submitted again with the same command; `tr
 
 - [x] Repository, code and configs (smoke-tested on CPU with synthetic data)
 - [x] Instructor meeting (November 6, 2026); claim revised from the feedback
-- [ ] Revised claim approved
+- [x] Revised claim approved (November 12, 2026)
 - [x] Wulver exploration and pilot (`report/wulver_exploration.md`): core plan about 17 GPU-hours, 101 SU
 - [ ] Learning-rate sweeps
 - [ ] Core runs: ResNet-18, ViT-Lite-7/8, 7/4, 7/2 (3 seeds each), ViT-B/16 fine-tune
