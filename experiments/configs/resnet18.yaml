@@ -24,7 +24,7 @@ train:
   clip_grad: null
 optim:
   name: sgd
-  lr: 0.1                  # set from the validation sweep (experiments/wulver/lr_sweep.sh)
+  lr: 0.025  # chosen by the 300-epoch validation sweep
   momentum: 0.9
   nesterov: true
   weight_decay: 5.0e-4

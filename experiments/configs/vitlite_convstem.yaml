@@ -24,7 +24,7 @@ train:
   clip_grad: null
 optim:                     # CCT released CIFAR-10 recipe (cct_7-3x1_cifar10_300epochs.yml)
   name: adamw
-  lr: 5.5e-4
+  lr: 0.000275  # chosen by the 300-epoch validation sweep
   weight_decay: 0.06
   warmup_epochs: 10
   cooldown_epochs: 10
